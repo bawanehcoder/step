@@ -12,6 +12,7 @@ use Filament\Resources\Components\Tab;
 
 use Filament\Resources\Pages\ListRecords;
 use Filament\Actions\Action;
+use Illuminate\Contracts\Support\Htmlable;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -20,7 +21,11 @@ class ListOrders extends ListRecords
     use ExposesTableToWidgets;
     protected static string $resource = OrderResource::class;
 
-    
+    public function getTitle(): string|Htmlable
+    {
+        return __('Orders');
+    }
+
 
     protected function getHeaderActions(): array
     {
@@ -29,10 +34,10 @@ class ListOrders extends ListRecords
 
             \pxlrbt\FilamentExcel\Actions\Pages\ExportAction::make(),
             Action::make('import')
-                ->label('Import Orders')
+                ->label(__('Import Orders'))
                 ->form([
                     FileUpload::make('file')
-                        ->label('Select CSV File')
+                        ->label(__('Select CSV File'))
                         ->directory('temp') // Save the file temporarily
                         ->required()
                         ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel', 'application/csv']),
@@ -69,13 +74,13 @@ class ListOrders extends ListRecords
     {
         return [
             null => Tab::make('All'),
-            'pending pickup' => Tab::make()->query(fn($query) => $query->where('order_status', 'pending pickup')),
-            'picked up' => Tab::make()->query(fn($query) => $query->where('order_status', 'picked up')),
-            'ready for delivery' => Tab::make()->query(fn($query) => $query->where('order_status', 'ready for delivery')),
-            'out for delivery' => Tab::make()->query(fn($query) => $query->where('order_status', 'out for delivery')),
-            'delivered' => Tab::make()->query(fn($query) => $query->where('order_status', 'delivered')),
-            'returned' => Tab::make()->query(fn($query) => $query->where('order_status', 'returned')),
-            'damaged' => Tab::make()->query(fn($query) => $query->where('order_status', 'damaged')),
+            __('pending pickup') => Tab::make()->query(fn($query) => $query->where('order_status', 'pending pickup')),
+            __('picked up') => Tab::make()->query(fn($query) => $query->where('order_status', 'picked up')),
+            __('ready for delivery') => Tab::make()->query(fn($query) => $query->where('order_status', 'ready for delivery')),
+            __('out for delivery') => Tab::make()->query(fn($query) => $query->where('order_status', 'out for delivery')),
+            __('delivered') => Tab::make()->query(fn($query) => $query->where('order_status', 'delivered')),
+            __('returned') => Tab::make()->query(fn($query) => $query->where('order_status', 'returned')),
+            __('damaged') => Tab::make()->query(fn($query) => $query->where('order_status', 'damaged')),
         ];
     }
 }

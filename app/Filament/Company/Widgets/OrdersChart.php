@@ -6,24 +6,26 @@ use App\Models\Order;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 
 class OrdersChart extends ChartWidget
 {
-    protected static ?string $heading = 'Orders per month';
+    protected static ?string $heading = 'orders_per_month';
+    public function getHeading(): string | Htmlable | null
+    {
+        return __('Orders Per Month');
+    }
 
     protected static ?int $sort = 1;
 
     protected function getData(): array
     {
-
         $start = Carbon::parse(Order::where('company_id', auth()->user()->id)->min('created_at'));
         $end = Carbon::now();
         $period = CarbonPeriod::create($start, '1 month', $end);
 
-        $usersPerMonth = collect($period)->map(function ($date) {
+        $ordersPerMonth = collect($period)->map(function ($date) {
             $endDate = $date->copy()->endOfDay();
-
-            // dd($endDate);
 
             return [
                 'count' => Order::where('created_at', '<=', $endDate)
@@ -33,12 +35,13 @@ class OrdersChart extends ChartWidget
             ];
         });
 
-        $data = $usersPerMonth->pluck('count')->toArray();
-        $labels = $usersPerMonth->pluck('month')->toArray();
+        $data = $ordersPerMonth->pluck('count')->toArray();
+        $labels = $ordersPerMonth->pluck('month')->toArray();
+        
         return [
             'datasets' => [
                 [
-                    'label' => 'Orders',
+                    'label' => __('Orders'), 
                     'data' => $data,
                     'fill' => 'start',
                 ],

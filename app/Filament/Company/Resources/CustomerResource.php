@@ -29,16 +29,39 @@ class CustomerResource extends Resource
         return static::getModel()::query()->where('company_id', auth()->user()->id);
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return __('Customers');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Customer');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Customers');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')->required(),
-                TextInput::make('phone')->required(),
+                TextInput::make('name')->required()
+                ->label(__('Name')),
+
+                TextInput::make('phone')->required()
+                ->label(__('Phone')),
+
+                
                 TextInput::make('company_id')
+                ->label(__('company'))
+
                     ->default(auth()->user()->id)
                     ->hidden(),  // اختيار الشركة
                 Select::make('city_id')
+                ->label(__('City'))
                     ->relationship('city', 'name')                  // اختيار المدينة
                     ->required()
                     ->reactive()  // تحديد الحقل على أنه تفاعلي
@@ -52,12 +75,16 @@ class CustomerResource extends Resource
                         return Zone::where('city_id', $cityId)->pluck('name', 'id');  // جلب الزون المرتبطة بالمدينة
                     })
                     ->required()
-                    ->label('Zone')
+                    ->label(__('Zone'))
                     ->disabled(fn(callable $get) => !$get('city_id')),  // تعطيل الحقل إذا لم يتم اختيار مدينة
-                TextInput::make('street_name')->required(),
-                TextInput::make('building_number')->required(),
-                TextInput::make('floor')->required(),
-                Textarea::make('additional_details')->nullable(),
+                TextInput::make('street_name')->required()
+                ->label(__('Street Name')),
+                TextInput::make('building_number')->required()
+                ->label(__('Building Number')),
+                TextInput::make('floor')->required()
+                ->label(__('Floor')),
+                Textarea::make('additional_details')->nullable()
+                ->label(__('Additional Details')),
             ]);
     }
 
@@ -65,14 +92,17 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->sortable(),
-                TextColumn::make('phone')->sortable(),
-                // TextColumn::make('company.name')->label('Company')->sortable(),
-                TextColumn::make('city.name')->label('City')->sortable(),
-                TextColumn::make('zone.name')->label('Zone')->sortable(),
-                TextColumn::make('street_name')->label('Street')->sortable(),
-                TextColumn::make('building_number')->label('Building')->sortable(),
-                TextColumn::make('floor')->label('Floor')->sortable(),
+                TextColumn::make('name')->sortable()
+                ->label(__('Name')),
+
+                TextColumn::make('Phone')->sortable()
+                ->label(__('Phone')),
+                                // TextColumn::make('company.name')->label('Company')->sortable(),
+                TextColumn::make('city.name')->label(__('City'))->sortable(),
+                TextColumn::make('zone.name')->label(__('Zone'))->sortable(),
+                TextColumn::make('street_name')->label(__('Street Name'))->sortable(),
+                TextColumn::make('building_number')->label(__('Building Number'))->sortable(),
+                TextColumn::make('floor')->label(__('Floor'))->sortable(),
             ])
             ->filters([
                 //

@@ -9,11 +9,19 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrderLogsRelationManager extends RelationManager
 {
     protected static string $relationship = 'logs';
+
+   
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+{
+    return __('Log');
+}
 
     public function form(Form $form): Form
     {
@@ -30,8 +38,11 @@ class OrderLogsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('barcode')
             ->columns([
-                Tables\Columns\TextColumn::make('barcode'),
-                TextColumn::make('order_status')->sortable(), 
+                Tables\Columns\TextColumn::make('barcode')->label(__('Barcode') ),
+                Tables\Columns\TextColumn::make('order_status')->badge()->label(__('Status')),
+                Tables\Columns\TextColumn::make('editby')->label(__('editby')),
+                Tables\Columns\TextColumn::make('driver.name')->label(__('Driver')),
+                Tables\Columns\TextColumn::make('updated_at')->label(__('Updated at')),
             ])
             ->filters([
                 //

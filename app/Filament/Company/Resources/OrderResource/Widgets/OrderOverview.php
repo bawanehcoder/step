@@ -32,14 +32,15 @@ class OrderOverview extends BaseWidget
             ->count();
 
         return [
-            Stat::make('Orders', $this->getPageTableQuery()->count())
+            Stat::make(__('Orders'), $this->getPageTableQuery()->count())
                 ->chart(
                     $orderData
                         ->map(fn (TrendValue $value) => $value->aggregate)
                         ->toArray()
                 ),
-            Stat::make('Open orders', $this->getPageTableQuery()->whereIn('order_status', ['open', 'processing'])->count()),
-            Stat::make('Average price', number_format($this->getPageTableQuery()->avg('cash_required'), 2)),
+            Stat::make(__('Open Orders'), $this->getPageTableQuery()->whereIn('order_status', ['open', 'processing'])->count()),
+            
+            Stat::make(__('Average Price'), number_format($this->getPageTableQuery()->avg('cash_required'), 2)),
         ];
     }
 }

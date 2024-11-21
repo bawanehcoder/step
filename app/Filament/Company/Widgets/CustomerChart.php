@@ -7,10 +7,16 @@ use App\Models\Order;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 
 class CustomerChart extends ChartWidget
 {
     protected static ?string $heading = 'Customers per month';
+
+    public function getHeading(): string | Htmlable | null
+    {
+        return __('Customers Per Month');
+    }
 
     protected static ?int $sort = 1;
 
@@ -39,7 +45,7 @@ class CustomerChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Customers',
+                    'label' =>__( 'Customers'),
                     'data' => $data,
                     'fill' => 'start',
                 ],

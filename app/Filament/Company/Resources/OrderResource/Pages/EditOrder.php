@@ -18,7 +18,7 @@ class EditOrder extends EditRecord
         return [
             // Actions\DeleteAction::make(),
             ButtonAction::make('Print')
-                ->label('Print Invoice')
+                ->label(__('Print Invoice'))
                 ->url(fn($record) => route('orders.print', $record))
                 ->openUrlInNewTab(),
         ];

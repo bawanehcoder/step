@@ -9,7 +9,7 @@ use App\Filament\Company\Resources\OrderResource\Pages\CreateOrder;
 use App\Filament\Company\Resources\OrderResource\Pages\EditOrder;
 use App\Filament\Company\Resources\OrderResource\Pages\ListOrders;
 use App\Filament\Company\Resources\OrderResource\RelationManagers;
-use App\Filament\Resources\OrderResource\RelationManagers\OrderLogsRelationManager;
+use App\Filament\Company\Resources\OrderResource\RelationManagers\OrderLogsRelationManager;
 use App\Filament\Company\Resources\OrderResource\Widgets\OrderOverview;
 use App\Models\City;
 use App\Models\Customer;
@@ -36,6 +36,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component;
@@ -47,6 +48,20 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getNavigationLabel(): string
+    {
+        return __('Orders');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Orders');
+    }
 
 
     public static function getEloquentQuery(): Builder
@@ -63,6 +78,7 @@ class OrderResource extends Resource
                     ->schema([
                         Section::make()->schema([
                             TextInput::make('barcode')
+                                ->label(__('Barcode'))
                                 ->required()
 
                                 ->maxLength(12) // التأكد من أن الطول 12 خانة
@@ -77,26 +93,37 @@ class OrderResource extends Resource
 
                                     }
                                 })->disabled(fn($get) => $get('id') != null)
-                                ->label('Barcode')->columnSpan(2), // تعيين اسم الحقل/ توليد بار كود تلقائي
+                                ->columnSpan(2), // تعيين اسم الحقل/ توليد بار كود تلقائي
 
                             Forms\Components\Select::make('customer_id')
+                                ->label(__('Customer'))
+
                                 ->relationship('customer', 'name')
                                 ->searchable()
                                 ->preload()
 
                                 ->createOptionForm([
 
-                                    TextInput::make('name')->required(),
-                                    TextInput::make('phone')->required(),
+                                    TextInput::make('name')->required()
+                                        ->label(__('Name')),
+                                    TextInput::make('phone')->required()
+                                        ->label(__('Phone')),
+
                                     TextInput::make('company_id')
+                                        ->label(__('Company_'))
+
                                         ->default(auth('companies')->user()->id)
                                         ->readOnly(),
                                     Select::make('city_id')
+                                        ->label(__('City_'))
+
                                         ->relationship('city', 'name')                  // اختيار المدينة
                                         ->required()
                                         ->reactive()  // تحديد الحقل على أنه تفاعلي
                                         ->afterStateUpdated(fn($set) => $set('zone_id', null)),  // إعادة ضبط حقل الزون عند تغيير المدينة
                                     Select::make('zone_id')
+                                        ->label(__('Zone'))
+
                                         ->options(function (callable $get) {
                                             $cityId = $get('city_id');  // الحصول على معرف المدينة المختارة
                                             if (!$cityId) {
@@ -105,12 +132,19 @@ class OrderResource extends Resource
                                             return Zone::where('city_id', $cityId)->pluck('name', 'id');  // جلب الزون المرتبطة بالمدينة
                                         })
                                         ->required()
-                                        ->label('Zone')
+
                                         ->disabled(fn(callable $get) => !$get('city_id')),  // تعطيل الحقل إذا لم يتم اختيار مدينة
-                                    TextInput::make('street_name')->required(),
-                                    TextInput::make('building_number')->required(),
-                                    TextInput::make('floor')->required(),
-                                    Textarea::make('additional_details')->nullable(),
+                                    TextInput::make('street_name')->required()
+                                        ->label(__('Street Name')),
+
+                                    TextInput::make('building_number')->required()
+                                        ->label(__('Building Number')),
+
+                                    TextInput::make('floor')->required()
+                                        ->label(__('Floor')),
+
+                                    Textarea::make('additional_details')->nullable()
+                                        ->label(__('Additional Details')),
 
                                 ])
                                 ->required()
@@ -126,9 +160,11 @@ class OrderResource extends Resource
                                 }),
 
                             Select::make('city_id')
+                                ->label(__('City'))
 
 
-                                ->label('City')
+
+
                                 ->options(City::all()->pluck('name', 'id')),
                             // , // تعيين هذا الحقل ليكون غير قابل للتعديل
 
@@ -137,11 +173,11 @@ class OrderResource extends Resource
 
                             //     ->label('Zone')
                             //     ->options(Zone::all()->pluck('name', 'id')),
-                            TextInput::make('additional_details')->label('Zone')->required(),
+                            TextInput::make('additional_details')->label(__('Zone'))->required(),
 
                             // , // تعيين هذا الحقل ليكون غير قابل للتعديل
                             Forms\Components\TextInput::make('phone_number')
-                                ->label('Phone Number')
+                                ->label(__('Phone Number'))
 
 
                                 ->tel()
@@ -150,10 +186,12 @@ class OrderResource extends Resource
                             Forms\Components\TextInput::make('pickup_from')
 
 
-                                ->label('Pickup From')
+                                ->label(__('Pickup From'))
                                 ->default(auth('companies')->user()->address)
                                 ->nullable(),
                             Select::make('order_type_id')
+                                ->label(__('Order Type'))
+
 
 
                                 ->relationship('orderType', 'name')->default(\App\Models\OrderType::first()->id)->required(),  // اختيار نوع الطلب
@@ -164,12 +202,22 @@ class OrderResource extends Resource
 
 
 
-                            Textarea::make('order_description')->required()->columnSpan(2), // وصف الطلب
-                            TextInput::make('weight')->default(5)->required(), // الوزن
-                            TextInput::make('number_of_pieces')->default(1)->required(), // عدد القطع
-                            TextInput::make('invoice_number'), // رقم الفاتورة
-                            TextInput::make('invoice_value'), // قيمة الفاتورة
-                            TextInput::make('cash_required')->required(), // قيمة الكاش المطلوبة
+                            Textarea::make('order_description')->required()->columnSpan(2) // وصف الطلب
+                                ->label(__('Order Description')),
+                            TextInput::make('weight')->default(5)->required()
+                                ->label(__('Weight')),
+                            // الوزن
+                            TextInput::make('number_of_pieces')->default(1)->required()
+                                ->label(__('Number of Pieces')),
+                            // عدد القطع
+                            TextInput::make('invoice_number')// رقم الفاتورة
+                                ->label(__('Invoice Number')),
+
+                            TextInput::make('invoice_value') // قيمة الفاتورة
+                                ->label(__('Invoice Value')),
+
+                            TextInput::make('cash_required')->required() // قي
+                                ->label(__('Cash Required')),
 
 
                         ])->columns(2),
@@ -179,14 +227,17 @@ class OrderResource extends Resource
                 Forms\Components\Group::make()
                     ->schema(
                         [
-                            Section::make('Date')->schema([
+                            Section::make(__('Date'))->schema([
                                 TextInput::make('company_id')
+                                    ->label(__('Company'))
+
                                     ->default(auth('companies')->user()->id)
 
                                     ->readOnly(),
                                 Select::make('delivery_option')
 
-                                    ->label('Delivery Option') // اسم حقل خيار التسليم
+
+                                    ->label(__('Delivery Option')) // اسم حقل خيار التسليم
                                     ->options([
                                         'same day' => 'Same Day',
                                         'next day' => 'Next Day',
@@ -198,20 +249,24 @@ class OrderResource extends Resource
 
                                 DatePicker::make('custom_delivery_date')
 
-                                    ->label('Custom Delivery Date') // اسم حقل التاريخ
+                                    ->label(__('Custom Delivery Date')) // اسم حقل التاريخ
                                     ->required()
                                     ->native(condition: false)
                                     ->hidden(fn(callable $get) => $get('delivery_option') != 'custom date'), // إخفاء الحقل إذا لم يكن الخيار "Custom Date"
                             ]),
 
 
-                            Section::make('Status')->schema([
+                            Section::make(__('Status'))->schema([
                                 Select::make('order_status')
+                                    ->label(__('Order Status'))
+
 
                                     ->options(OrderStatus::class)
                                     ->disabled(true) // جعل الحقل غير قابل للتعديل عند الإضافة
                                     ->default('pending pickup'), // القيمة الافتراضية
-                                Textarea::make('order_notes')->nullable(), // ملاحظات الطلب
+                                Textarea::make('order_notes')->nullable() // ملاحظات الطلب
+                                    ->label(__('Order Notes')),
+
 
 
                             ]),
@@ -227,23 +282,33 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('barcode')->sortable(),  // عرض بار كود الطلب
-                TextColumn::make('customer.name')->label('Customer')->sortable(),  // عرض اسم الزبون
-                TextColumn::make('delivery_option')->sortable(),  // عرض خيار التسليم
+                TextColumn::make('barcode')->sortable()  // عرض بار كود الطلب
+                    ->label(__('Barcode')),
+
+                TextColumn::make('customer.name')->label(__('Customer'))->sortable(),  // عرض اسم الزبون
+
+                TextColumn::make('delivery_option')->sortable()// عرض خيار التسليم
+                    ->label(__('Delivery Option')),
+
                 TextColumn::make('cash_required')->sortable()
+                    ->label(__('Cash Required'))
+
                     ->summarize([
                         Tables\Columns\Summarizers\Sum::make()
-                            ->money(),
+                            ->money()
                     ]),
                 // عرض قيمة الكاش المطلوبة
-                TextColumn::make('order_status')->badge(), // عرض حالة الطلب
+                TextColumn::make('order_status')->badge() // عرض حالة الطلب
+                    ->label(__('Order Status')),
 
                 TextColumn::make('total_amount')
-                    ->label('Amount')
+                    ->label(__('Amount'))
 
                     ->sortable(),
                 TextColumn::make('del')
-                    ->label(' Delevery Price')
+
+
+                    ->label(__('Delevery Price'))
 
                     ->sortable()
 
@@ -257,7 +322,7 @@ class OrderResource extends Resource
 
                     SelectFilter::make('city_id')
                         ->multiple()
-                        ->label('City')
+                        ->label(__('City'))
                         ->options(function () {
                             return Zone::all()->pluck('name', 'id');
                         })
@@ -270,7 +335,7 @@ class OrderResource extends Resource
 
                     SelectFilter::make('zone_id')
                         ->multiple()
-                        ->label('Zone')
+                        ->label(__('Zone'))
                         ->options(function () {
                             return Zone::all()->pluck('name', 'id');
                         })
@@ -282,9 +347,11 @@ class OrderResource extends Resource
                         }),
 
                     Filter::make('phone_number')
-                        ->label('Phone Number')
+                        ->label(__('Phone Number'))
                         ->form([
-                            TextInput::make('phone_number'),
+                            TextInput::make('phone_number')
+                                ->label(__('Phone Number'))
+
 
                         ])
                         ->query(function (Builder $query, array $data): Builder {
@@ -293,9 +360,15 @@ class OrderResource extends Resource
 
 
                     Filter::make('created_at')
+                        ->label(__('created_at'))
+
                         ->form([
-                            DatePicker::make('created_from'),
-                            DatePicker::make('created_until'),
+                            DatePicker::make('created_from')
+                                ->label(__('Created From')),
+
+                            DatePicker::make('created_until')
+                                ->label(__('Created Until')),
+
                         ])->columnSpan(2)->columns(2)
                         ->query(function (Builder $query, array $data): Builder {
                             return $query
@@ -319,6 +392,8 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 BulkAction::make('Print Labels')
+                    ->label(__('Print Labels'))
+
 
                     ->action(
                         function (Collection $records, Component $livewire) {

@@ -22,6 +22,21 @@ class OrderLogResource extends Resource
 
     protected static ?string $navigationLabel = 'Tracking';
 
+    public static function getNavigationLabel(): string
+    {
+        return __('Tracking');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Log');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Order Logs');
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return static::getModel()::query()->where('company_id', auth()->user()->id);
@@ -39,17 +54,25 @@ class OrderLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('barcode')->searchable(),
-                Tables\Columns\TextColumn::make('order_notes'),
-                Tables\Columns\TextColumn::make('order_status')->badge(),
-                Tables\Columns\TextColumn::make('created_at'),
+                Tables\Columns\TextColumn::make('barcode')->searchable()
+                ->label(__('Barcode')),
+
+                Tables\Columns\TextColumn::make('order_notes')
+                ->label(__('Order Notes')),
+
+                Tables\Columns\TextColumn::make('order_status')->badge()
+                ->label(__('Order Status')),
+
+                Tables\Columns\TextColumn::make('created_at')
+                ->label(__('Created at')),
+
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Action::make('view')
-                    ->label('View Order')
+                    ->label(__('View Order'))
                     ->url(fn ($record) => route('filament.resources.orders.show2', $record->order_id)), // افترض أن لديك علاقة order_id
             
             ])
