@@ -217,7 +217,7 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('barcode')->sortable(),  // عرض بار كود الطلب
+                TextColumn::make('barcode')->sortable()->searchable(),  // عرض بار كود الطلب
                 ImageColumn::make('barcode_image'),
 
 

@@ -16,6 +16,10 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Collection;
+use Livewire\Component;
+use Filament\Tables\Actions\BulkAction;
+
 
 class OrdersRelationManager extends RelationManager
 {
@@ -200,6 +204,7 @@ class OrdersRelationManager extends RelationManager
             )
             ->headerActions([
                 // Tables\Actions\CreateAction::make(),
+               
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -209,6 +214,20 @@ class OrdersRelationManager extends RelationManager
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+                 BulkAction::make('Print Labels')
+
+                    ->action(
+                        function (Collection $records, Component $livewire) {
+                            $recordIds = $records->pluck('id')->toArray();
+                            $ids = implode('-', $recordIds);
+
+
+                            // dd($ids);
+                            $livewire->js('window.open(\' ' . route('orders.prints', $ids) . ' \', \'_blank\');');
+                            // return redirect()->route('orders.prints',$ids);
+                        }
+                    )
+                    ->openUrlInNewTab()
             ]);
     }
 }
