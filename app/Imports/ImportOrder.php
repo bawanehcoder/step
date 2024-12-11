@@ -12,7 +12,6 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Filament\Notifications\Notification;
 
-
 class ImportOrder implements ToModel, WithHeadingRow
 {
 
@@ -119,7 +118,7 @@ class ImportOrder implements ToModel, WithHeadingRow
                 'company_id' => $company_id,
                 'additional_details' => $row['zone_id'],
                 'pickup_from' => $company->address
-
+                
             ]);
         } catch (\Throwable $th) {
             //throw $th;

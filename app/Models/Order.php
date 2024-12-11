@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Picqer\Barcode\BarcodeGeneratorPNG;
+
 use Storage;
 
 class Order extends Model
@@ -34,7 +36,11 @@ class Order extends Model
         'total_amount',
         'phone_number',
         'pickup_from',
-        'additional_details'
+        'additional_details',
+        'cash_note',
+        'company_name',
+        'customer_name',
+        'phone2'
 
     ];
 
@@ -61,9 +67,23 @@ class Order extends Model
                 $order->barcode =  (string) $max_id + 1;
 
             } else {
-                $order->barcode =  '270000000';
+                $order->barcode =  '2700000';
 
             }
+
+
+            $user = User::find(1);
+        //   dd( Notification::make()
+        //   ->title('New Order')
+        //   ->sendToDatabase(User::find(1)));
+
+            // dd($user->notify(
+            //     Notification::make()
+            //         ->title('New Order #: ' . $order->barcode)
+            //         ->toDatabase(),
+            // ));
+
+            
 
 
             // توليد رقم عشوائي مكون من تسعة أرقام
@@ -83,7 +103,9 @@ class Order extends Model
 
             // تخزين المسار في قاعدة البيانات
             $order->barcode_image = 'data:image/png;base64,' . base64_encode($barcode);
-            ;
+            
+
+           
         });
     }
 

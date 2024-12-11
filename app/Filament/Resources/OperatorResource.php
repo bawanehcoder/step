@@ -33,9 +33,8 @@ class OperatorResource extends Resource
                     ->required(),
 
                 Forms\Components\TextInput::make('email')
-                    ->label('Email')
-                    ->required()
-                    ->email(),
+                    ->label('User Name')
+                    ->required(),
 
                 Forms\Components\TextInput::make('phone')
                     ->label('Phone')

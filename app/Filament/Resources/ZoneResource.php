@@ -32,6 +32,8 @@ class ZoneResource extends Resource
                 TextInput::make('name')->required(),
                 TextInput::make('price')->numeric()->required(),
                 Select::make('city_id')
+                ->searchable()
+                ->preload()
                     ->relationship('city', 'name')
                     ->required(),
                 Forms\Components\TextInput::make('price_per_kg')

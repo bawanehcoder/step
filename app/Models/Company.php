@@ -23,6 +23,8 @@ class Company extends Authenticatable implements FilamentUser
         'is_blocked',
         'city_id',
         'zone_id',
+        'contact',
+        'phone2'
     ];
 
     public function canAccessPanel(Panel $panel): bool

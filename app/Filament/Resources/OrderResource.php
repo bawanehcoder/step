@@ -60,74 +60,17 @@ class OrderResource extends Resource
                 Forms\Components\Group::make()
                     ->schema([
                         Section::make()->schema([
-                            TextInput::make('barcode')
-                                ->required()
-
-                                ->maxLength(12) // التأكد من أن الطول 12 خانة
-                                ->default(function () {
-                                    $max_id = \DB::table('orders')->find(\DB::table('orders')->max('id'))?->barcode;
-                                    if ($max_id) {
-                                        return (string) $max_id + 1;
-
-                                    } else {
-                                        return '270000000';
-
-                                    }
-                                })
-                                ->disabled(fn($get) => $get('id') != null)
-                                ->label('Barcode')->columnSpan(2), // تعيين اسم الحقل/ توليد بار كود تلقائي
-
-                            Forms\Components\Select::make('customer_id')
-                                ->relationship('customer', 'name')
-                                ->searchable()
-                                ->preload()
-                                ->createOptionForm([
-
-                                    TextInput::make('name')->required(),
-                                    TextInput::make('phone')->required(),
-                                    Select::make('company_id')
-                                        ->relationship('company', 'name')->required(),  // اختيار الشركة
-                                    Select::make('city_id')
-                                        ->relationship('city', 'name')                  // اختيار المدينة
-                                        ->required()
-                                        ->reactive()  // تحديد الحقل على أنه تفاعلي
-                                        ->afterStateUpdated(fn($set) => $set('zone_id', null)),  // إعادة ضبط حقل الزون عند تغيير المدينة
-                                    Select::make('zone_id')
-                                        ->options(function (callable $get) {
-                                            $cityId = $get('city_id');  // الحصول على معرف المدينة المختارة
-                                            if (!$cityId) {
-                                                return [];  // إذا لم تكن هناك مدينة مختارة، لا تعرض شيئًا
-                                            }
-                                            return Zone::where('city_id', $cityId)->pluck('name', 'id');  // جلب الزون المرتبطة بالمدينة
-                                        })
-                                        ->required()
-                                        ->label('Zone')
-                                        ->disabled(fn(callable $get) => !$get('city_id')),  // تعطيل الحقل إذا لم يتم اختيار مدينة
-                                    TextInput::make('street_name')->required(),
-                                    TextInput::make('street_name')->required(),
-                                    TextInput::make('building_number')->required(),
-                                    TextInput::make('floor')->required(),
-                                    Textarea::make('additional_details')->nullable(),
-
-                                ])
-                                ->required()
-                                ->reactive() // لجعل الحقول تتفاعل عند تغيير قيمة الزبون
-                                ->afterStateUpdated(function ($state, $set) {
-                                    // عند اختيار الزبون، قم بتعيين المدينة والزون
-                                    if ($state) {
-                                        $customer = Customer::find($state);
-                                        $set('city_id', $customer->city_id); // تعيين المدينة
-                                        $set('zone_id', $customer->zone_id); // تعيين الزون
-                                        $set('phone_number', $customer->phone); // تعيين الزون
-                                    }
-                                }),
-
                             Select::make('city_id')
+                            ->searchable()
+                ->preload()
                                 ->label('City')
                                 ->options(City::all()->pluck('name', 'id')),
-                            // ->disabled(), // تعيين هذا الحقل ليكون غير قابل للتعديل
 
+                            
                             TextInput::make('additional_details')->label('Zone')->required(),
+                            TextInput::make('company_name')->label('Company')->required(),
+                            TextInput::make('customer_name')->label('Contact Person')->required(),
+
 
                             // ->disabled(), // تعيين هذا الحقل ليكون غير قابل للتعديل
                             Forms\Components\TextInput::make('phone_number')
@@ -135,25 +78,49 @@ class OrderResource extends Resource
                                 ->tel()
                                 ->required()
                                 ->maxLength(15),
+                            TextInput::make('phone2')->label('Secoundry Phone'),
+
                             Forms\Components\TextInput::make('pickup_from')
-                                ->label('Pickup From')
+                                ->label('Free Address')
                                 ->nullable(),
                             Select::make('order_type_id')
-                                ->relationship('orderType', 'name')->default(\App\Models\OrderType::first()->id)->required(),  // اختيار نوع الطلب
+                            ->searchable()
+                ->preload()
+                                ->relationship('orderType', 'name')->default(\App\Models\OrderType::first()->id),  // اختيار نوع الطلب
 
 
 
 
 
+                                Textarea::make('order_notes')->nullable()->columnSpan(2), // ملاحظات الطلب
 
 
-                            Textarea::make('order_description')->required()->columnSpan(2), // وصف الطلب
-                            TextInput::make('weight')->default(5)->required(), // الوزن
-                            TextInput::make('number_of_pieces')->default(1)->required(), // عدد القطع
-                            TextInput::make('invoice_number'), // رقم الفاتورة
-                            TextInput::make('invoice_value'), // قيمة الفاتورة
-                            TextInput::make('cash_required')->required(), // قيمة الكاش المطلوبة
+                            // Textarea::make('order_description')->required()->columnSpan(2), // وصف الطلب
+                            TextInput::make('weight')->default(5), // الوزن
+                            TextInput::make('number_of_pieces')->label('PCS')->default(1)->required(), // عدد القطع
+                            // TextInput::make('invoice_number'), // رقم الفاتورة
+                            // TextInput::make('invoice_value'), // قيمة الفاتورة
+                            TextInput::make('cash_required')->label('Collection')->required()
+                            ->disabled(fn (string $context) => $context === 'edit'), // قيمة الكاش المطلوبة
 
+                            TextInput::make('barcode')
+                            ->required()
+                            ->minLength(7)
+                            ->maxLength(7) // التأكد من أن الطول 12 خانة
+                            ->default(function () {
+                                $max_id = \DB::table('orders')->find(\DB::table('orders')->max('id'))?->barcode;
+                                if ($max_id) {
+                                    return (string) $max_id + 1;
+
+                                } else {
+                                    return '2700000';
+
+                                }
+                            })
+                            ->disabled(fn($get) => $get('id') != null)
+                            ->unique()
+
+                            ->label('Barcode')->columnSpan(2), // تعيين اسم الحقل/ توليد بار كود تلقائي
 
                         ])->columns(2),
                     ])
@@ -164,6 +131,8 @@ class OrderResource extends Resource
                         [
                             Section::make('Date')->schema([
                                 Select::make('company_id')
+                                ->searchable()
+                ->preload()
                                     ->label('Company')
                                     ->relationship('company', 'name') // اختيار الشركة
                                     ->required()
@@ -201,7 +170,6 @@ class OrderResource extends Resource
                                     ->options(OrderStatus::class)
                                     ->disabled(fn($get) => $get('id') === null) // جعل الحقل غير قابل للتعديل عند الإضافة
                                     ->default('pending pickup'), // القيمة الافتراضية
-                                Textarea::make('order_notes')->nullable(), // ملاحظات الطلب
 
 
                             ]),

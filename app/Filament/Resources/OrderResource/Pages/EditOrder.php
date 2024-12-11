@@ -8,6 +8,8 @@ use App\Models\OrderLog;
 use Filament\Actions;
 use Filament\Pages\Actions\ButtonAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Forms\Components\TextInput;
+
 
 class EditOrder extends EditRecord
 {
@@ -21,6 +23,23 @@ class EditOrder extends EditRecord
                 ->label('Print Invoice')
                 ->url(fn($record) => route('orders.print', $record))
                 ->openUrlInNewTab(),
+                ButtonAction::make('change')
+                    ->label('Change Cash Collection')
+                    ->button()
+                    ->color('info')
+                    ->icon('heroicon-o-check')
+                    ->modalHeading('Invoice Number')
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'cash_required' => $data['cash_required'],
+                            'cash_note' => $data['cash_note'],
+                        ]);
+                    })
+                    ->form([
+                        TextInput::make('cash_required')->label('new Collection'),
+                        TextInput::make('cash_note')->label('Note')->required(),
+                    ])
+                    ->requiresConfirmation(),
         ];
     }
 

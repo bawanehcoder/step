@@ -66,10 +66,12 @@
         .details div:last-child {
             border-bottom: none;
         }
+        footer {page-break-after: always;}
     </style>
 </head>
 
 <body>
+    @for($i = 0; $i< $order->number_of_pieces ; $i++)
     <div class="container">
 
         <div class="header">
@@ -142,7 +144,12 @@
                 <span class="value">{{ $order->created_at->format('Y-m-d H:i') }}</span>
             </div>
         </div>
+
+        <footer>
+{{ $i + 1 }} of {{ $order->number_of_pieces }}
+        </footer>
     </div>
+    @endfor
 </body>
 <script>
     window.print(); // Automatically print the invoice when the page loads. Replace this line with your desired print logic.

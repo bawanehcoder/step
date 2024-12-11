@@ -31,21 +31,30 @@ class CompanyResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
     protected static ?string $navigationGroup = 'Users';
+
+    protected static ?string $navigationLabel ='Client Information';
+    protected static ?string $label = 'Clients Information';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')->required(),
+                TextInput::make('name')->label('Company')->required(),
+                TextInput::make('contact')->label('Contact Person')->required(),
                 FileUpload::make('image')->image()->nullable(), // لرفع الصور
                 TextInput::make('phone')->required(),
+                TextInput::make('phone2')->required(),
                 Select::make('city_id')
+                ->searchable()
+                ->preload()
                     ->relationship('city', 'name')                  // اختيار المدينة
                     ->required()
                     ->reactive()  // تحديد الحقل على أنه تفاعلي
                     ->afterStateUpdated(fn($set) => $set('zone_id', null)),  // إعادة ضبط حقل الزون عند تغيير المدينة
                 Select::make('zone_id')
+                ->searchable()
+                ->preload()
                     ->options(function (callable $get) {
                         $cityId = $get('city_id');  // الحصول على معرف المدينة المختارة
                         if (!$cityId) {
@@ -58,7 +67,7 @@ class CompanyResource extends Resource
                     ->disabled(fn(callable $get) => !$get('city_id')),
                 TextInput::make('address')->required(),
                 TextInput::make('email')
-                    ->label('Email')
+                    ->label('User Name')
                     ->required()
                     ->unique(ignoreRecord: true), // التأكد من فريدة اسم المستخدم
 
@@ -66,6 +75,7 @@ class CompanyResource extends Resource
                     ->label('Password')
                     ->password()
                     ->revealable()
+                    ->minLength(3)
                     ->dehydrateStateUsing(fn($state) => bcrypt($state)),
                 Toggle::make('is_blocked')
                     ->label('Blocked')
@@ -77,6 +87,8 @@ class CompanyResource extends Resource
                     ->schema([
                         Select::make('city_id')
                             ->label('City')
+                            ->searchable()
+                ->preload()
                             ->relationship('city', 'name') // استخدام العلاقة مع المدن
                             ->required()
                             ->reactive() // يجعل الحقل ديناميكيًا
@@ -92,6 +104,8 @@ class CompanyResource extends Resource
                             }), // إعادة تعيين قيمة الزون عند تغيير المدينة
 
                         Select::make('zone_id')
+                        ->searchable()
+                ->preload()
                             ->label('Zone')
                             ->options(function (callable $get) {
                                 $cityId = $get('city_id'); // الحصول على قيمة المدينة المختارة

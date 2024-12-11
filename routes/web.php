@@ -7,6 +7,8 @@ use App\Filament\Resources\OrderResource\Pages\EditOrder;
 use App\Http\Controllers\ExelController;
 use App\Models\Invoice;
 use App\Models\Order;
+use App\Models\User;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -49,3 +51,11 @@ Route::get('/delivery-sheet', DeliverySheet::class)->name('filament.delivery-she
 
 Route::get('/file-import',[ExelController::class,'importView'])->name('import-view');
 Route::post('/import',[ExelController::class,'import'])->name('import');
+
+
+
+Route::get('zft', function(){
+    Notification::make()
+          ->title('New Order')
+          ->sendToDatabase(User::first());
+});
